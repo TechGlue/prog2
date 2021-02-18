@@ -1,7 +1,13 @@
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Scanner;
+
+//If the file is smaller than the heap go through a seperate method to only go for relevant information.
+//tbh when writing out go from the 1 to the size of the value that will print out only relevant info.
+
 /*
     We will first load in all of our values into the min heap
     then perform a min heapify and then we will do a sort having all the values in descending order.
@@ -17,18 +23,10 @@ import java.util.Scanner;
  */
 
 public class Richest {
-
-    //what to do
-    //first we have to open our file
-    //read each line from the file and then we need to put it into a 1d array.
-
-
-    //we know that we will need to have heap specific methods.
-    //like maxheap, heap sort, build heap
-
+    
     private int[] heap;
-    int size;
-    int maxSize;
+    private int size;
+    private int maxSize;
 
     public Richest(){
         this.maxSize = 10;
@@ -37,19 +35,13 @@ public class Richest {
         heap[0] = Integer.MIN_VALUE;
     }
 
-    public static void main(String[] args) throws FileNotFoundException {
+    public static void main(String[] args) throws IOException {
         Richest ref = new Richest();
+        String file = args[0];
 
-        ref.initialRead("tester.txt");
-
-        System.out.println(Arrays.toString(ref.heap));
+        ref.initialRead(file);
         ref.heapSort();
-        System.out.println(Arrays.toString(ref.heap));
-
-
-
-
-
+        ref.writingOut();
     }
 
     public int getLeft(int index){
@@ -63,15 +55,10 @@ public class Richest {
     public int getParent(int index){
         return index / 2;
     }
-
-    public int findMax(int size){
-        int maxElement = Integer.MIN_VALUE;
-
-        for(int i = size/2; i<=size; i++){
-            maxElement = Math.max(maxElement, heap[i]);
-        }
-
-        return maxElement;
+    public void swap(int first, int second){
+        int temp = heap[first];
+        heap[first] = heap[second];
+        heap[second] = temp;
     }
 
     public void insert(int element){
@@ -92,6 +79,17 @@ public class Richest {
         }
     }
 
+    public int remove(){
+        int removed = heap[1];
+        int lastIndex = size;
+
+        heap[1] = heap[size--];
+        heap[lastIndex] = 0;
+        minHeapify(1);
+        System.out.println("The size of the array after the delete is: " + size);
+        return removed;
+    }
+
     public void minHeapify(int index){
         int left = getLeft(index);
         int right = getRight(index);
@@ -106,31 +104,18 @@ public class Richest {
         if(right <= size && heap[right] < heap[smallest]){
             smallest = right;
         }
-
         if(smallest != index){
             int temp = heap[index];
             heap[index] = heap[smallest];
             heap[smallest] = temp;
             minHeapify(smallest);
         }
-
     }
 
     public void buildMinHeap(){
         for(int i = size/2; i >=1; i--){
             minHeapify(i);
         }
-    }
-
-    public int remove(){
-        int removed = heap[1];
-        int lastIndex = size;
-
-        heap[1] = heap[size--];
-        heap[lastIndex] = 0;
-        minHeapify(1);
-        System.out.println("The size of the array after the delete is: " + size);
-        return removed;
     }
 
     public void heapSort(){
@@ -143,11 +128,6 @@ public class Richest {
         }
     }
 
-    public void swap(int first, int second){
-        int temp = heap[first];
-        heap[first] = heap[second];
-        heap[second] = temp;
-    }
     public void initialRead(String fileName) throws FileNotFoundException {
         if(fileName == null || fileName.isEmpty()){
             System.out.println("Invalid type returning...");
@@ -162,7 +142,8 @@ public class Richest {
 
         while(file.hasNextInt() && size <= maxSize) {
             int next = file.nextInt();
-            if (next > heap[1] && file.hasNextLine()) {
+
+            if(next > heap[1]) {
                 remove();
                 insert(next);
                 System.out.println(Arrays.toString(heap));
@@ -171,6 +152,23 @@ public class Richest {
             }
         }
 
+        maxSize = size;
         file.close();
     }
-}
+
+    public void writingOut() throws IOException {
+        FileWriter out = new FileWriter("richest.output");
+
+        if(heap[1] == 0 && maxSize == 0){
+            out.write("There array is empty, no values printed out to file.");
+            out.close();
+        }
+        else{
+            for(int i = 1; i <= maxSize; i++){
+                out.write(heap[i] + "\n");
+            }
+        }
+        System.out.println("Done writing to file...");
+        out.close();
+    }
+}//end of class
