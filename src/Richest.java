@@ -27,8 +27,6 @@ public class Richest {
     //like maxheap, heap sort, build heap
 
     private int[] heap;
-
-
     int size;
     int maxSize;
 
@@ -42,8 +40,10 @@ public class Richest {
     public static void main(String[] args) throws FileNotFoundException {
         Richest ref = new Richest();
 
-
         ref.initialRead("tester.txt");
+
+        System.out.println(Arrays.toString(ref.heap));
+        ref.heapSort();
         System.out.println(Arrays.toString(ref.heap));
 
 
@@ -90,7 +90,6 @@ public class Richest {
             i = parent;
             parent = getParent(i);
         }
-
     }
 
     public void minHeapify(int index){
@@ -127,7 +126,6 @@ public class Richest {
         int removed = heap[1];
         int lastIndex = size;
 
-
         heap[1] = heap[size--];
         heap[lastIndex] = 0;
         minHeapify(1);
@@ -157,13 +155,22 @@ public class Richest {
         }
         Scanner file = new Scanner(new File(fileName));
 
-        while(file.hasNext() && size != 10){
+        while(file.hasNextInt() && size != maxSize){
             insert(file.nextInt());
         }
+        System.out.println(Arrays.toString(heap));
+
+        while(file.hasNextInt() && size <= maxSize) {
+            int next = file.nextInt();
+            if (next > heap[1] && file.hasNextLine()) {
+                remove();
+                insert(next);
+                System.out.println(Arrays.toString(heap));
+            } else if(file.hasNextLine()){
+                file.nextLine();
+            }
+        }
+
         file.close();
-    }
-
-    public void readFromAndFill(String filename){
-
     }
 }
