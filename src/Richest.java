@@ -1,49 +1,51 @@
+//Luis Garcia
+//CSCD 320
+//prog 2
+//The goal of our program is to utilize a min heap to find 10k of the biggest values from a input file.
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Scanner;
 
-//If the file is smaller than the heap go through a seperate method to only go for relevant information.
-//tbh when writing out go from the 1 to the size of the value that will print out only relevant info.
-
-/*
-    We will first load in all of our values into the min heap
-    then perform a min heapify and then we will do a sort having all the values in descending order.
-    Once we have all the values in descending order we will read one by one and have a counter til we reach 10,000 we can
-    get it down.
-
-    //figured it out have one min heap array and have another array that will be our target
-    //we read our values first 10 k the largest number from the 10k we pop the max value by calling our find max value.
-    //Then we are going to read in the next value from the file do this til we reach the end and once we reach the end of the file
-    //we start
-    //removing from the heap and when removing form the heap we start pushing onto our target.
-
- */
-
 public class Richest {
-    
+    /* Heap variables for keeping track of the size and for setting our maximum heap size.
+    as well setting heap[0] to a min val to represent a null position in our heap
+    because we are using 1 based indexing for the heap.
+    */
     private int[] heap;
     private int size;
     private int maxSize;
 
     public Richest(){
-        this.maxSize = 10;
+        this.maxSize = 10000;
         this.heap = new int[maxSize + 1];
         this.size = 0;
         heap[0] = Integer.MIN_VALUE;
     }
+    //
 
     public static void main(String[] args) throws IOException {
-        Richest ref = new Richest();
-        String file = args[0];
+        /*main calls and a try catch for addressing any errors that may occur when
+        running through command line.
+        */
+        try {
+            Richest ref = new Richest();
+            String file = args[0];
 
-        ref.initialRead(file);
-        ref.heapSort();
-        ref.writingOut();
+            if (args[0].isEmpty()) {
+                System.out.println("ERROR: No file was passed in");
+            } else {
+                System.out.println("Working on picking the top 10k numbers please wait..");
+                ref.initialRead(file);
+                ref.heapSort();
+                ref.writingOut();
+            }
+        }catch(ArrayIndexOutOfBoundsException e){
+            System.out.println("ERROR INVALID INPUT TYPE PASSED IN EXITING PROGRAM...");
+        }
     }
 
+    //getters for grabbing specific values from a heap.
     public int getLeft(int index){
         return (2 * index);
     }
@@ -60,7 +62,12 @@ public class Richest {
         heap[first] = heap[second];
         heap[second] = temp;
     }
+    //
 
+    /*this method will take in a element insert the element at the end of the list.
+      Once inserted the size of the heap will go up. Then we will go through the process of
+      fixing the shape of the min heap once fixed we will just exit.
+     */
     public void insert(int element){
         if(size >= maxSize){
             return;
@@ -78,18 +85,24 @@ public class Richest {
             parent = getParent(i);
         }
     }
-
-    public int remove(){
-        int removed = heap[1];
+    /*
+        The removal method will set up a variable to grab the index of the last member of the heap.
+        Then it'll send the last member of the tree to the top. Then we reduce the size of the heap
+        clear out the position of the last value in the heap to show the changes. Once done
+        we heapify to rebuild the minheaps shape from the 1 value in the tree.
+     */
+    public void remove(){
         int lastIndex = size;
 
         heap[1] = heap[size--];
         heap[lastIndex] = 0;
         minHeapify(1);
-        System.out.println("The size of the array after the delete is: " + size);
-        return removed;
     }
 
+    /*
+       For minHeapify the main purpose of it is to take in a index. Then bubble it's way down
+       our subtree swapping values when needed in order to satisfy our min heap's property.
+     */
     public void minHeapify(int index){
         int left = getLeft(index);
         int right = getRight(index);
@@ -111,7 +124,7 @@ public class Richest {
             minHeapify(smallest);
         }
     }
-
+    //builds a heap from a array
     public void buildMinHeap(){
         for(int i = size/2; i >=1; i--){
             minHeapify(i);
@@ -128,7 +141,14 @@ public class Richest {
         }
     }
 
-    public void initialRead(String fileName) throws FileNotFoundException {
+    /*
+        This method takes in the values from a file initially reads them into an array.
+        Once read we start removing and inserting based on whether the value from the file
+        is bigger than our min val from our tree. If so then we delete the value at the top
+        insert the next value in the list and continue this process till we have the max vals in the list.
+        Therefore satisfying our requirement of only having 10k vals at a time.
+     */
+    public void initialRead(String fileName) throws IOException {
         if(fileName == null || fileName.isEmpty()){
             System.out.println("Invalid type returning...");
             return;
@@ -138,7 +158,6 @@ public class Richest {
         while(file.hasNextInt() && size != maxSize){
             insert(file.nextInt());
         }
-        System.out.println(Arrays.toString(heap));
 
         while(file.hasNextInt() && size <= maxSize) {
             int next = file.nextInt();
@@ -146,7 +165,6 @@ public class Richest {
             if(next > heap[1]) {
                 remove();
                 insert(next);
-                System.out.println(Arrays.toString(heap));
             } else if(file.hasNextLine()){
                 file.nextLine();
             }
@@ -156,6 +174,7 @@ public class Richest {
         file.close();
     }
 
+    //file writer writing our array out to richest.output
     public void writingOut() throws IOException {
         FileWriter out = new FileWriter("richest.output");
 
@@ -168,7 +187,7 @@ public class Richest {
                 out.write(heap[i] + "\n");
             }
         }
-        System.out.println("Done writing to file...");
+        System.out.println("Done, output written to a file!!!");
         out.close();
     }
 }//end of class
